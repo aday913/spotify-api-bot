@@ -7,3 +7,4 @@ config:
   discover_save_id: <insert_id_here>
 
   concert_playlist_id: <insert_id_here>
+  output_file_path: <insert_path_here>
