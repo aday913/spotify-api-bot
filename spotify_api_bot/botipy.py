@@ -1,8 +1,6 @@
 from datetime import datetime
 import logging
-# import os
 
-# from dotenv import load_dotenv
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from yaml import load, Loader
@@ -17,7 +15,7 @@ class SpotifyBot():
             discover_playlist_id : str,
             save_playlist_id : str,
             concert_check_id : str,
-            output_file_path: str
+            log
     ):
         """Saves a playlists arsists to an output file
 
@@ -41,15 +39,18 @@ class SpotifyBot():
 
         # Artist check automation variables
         self.concert_id = concert_check_id
-        self.output_path = output_file_path
+
+        self.log = log
 
         self.spotify = self.get_oath(
             self.client_id, 
             self.client_secret, 
             self.redirect
             )
+        self.log.info('Successfully authorized myself for the spotify api')
             
     def get_oath(self, id, secret, redirect):
+        self.log.info('Getting authentication for spotify api')
         # Scopes found in spotipy documentation
         SCOPES = [
             "user-library-modify",
@@ -74,6 +75,7 @@ class SpotifyBot():
         )
     
     def get_concert_artists(self):
+        self.log.info('Getting all artists from concert playlist')
         artist_list = []
         offset = 0
         while True:
@@ -88,19 +90,15 @@ class SpotifyBot():
             for i in data['items']:
                 artist = i['track']['artists'][0]['name']
                 if artist not in artist_list:
+                    self.log.info(f' Found artist {artist}')
                     artist_list.append(artist)
             offset += 10
+        self.log.info(f'Total amount of artists found in playlist: {len(artist_list)}')
         return artist_list
     
-    def write_to_file(self):
-        with open(self.output_path, 'w') as outfile:
-            outfile.write('\n'.join(self.concert_artists))
-    
     def run(self):
-        now = datetime.now()
-        now_str = now.strftime('%Y%m%d')
-        self.concert_artists = [now_str] + self.get_concert_artists()
-        self.write_to_file()
+        self.concert_artists = self.get_concert_artists()
+        return self.concert_artists
 
 if __name__ == '__main__':
 
@@ -108,7 +106,7 @@ if __name__ == '__main__':
     
     config = None
     with open('config.yaml', 'r') as yml:
-        config = load(yml, Loader=Loader)['config']
+        config = load(yml, Loader=Loader)['spotify']
     
     spotifybot = SpotifyBot(
         config['client_id'],
@@ -117,7 +115,8 @@ if __name__ == '__main__':
         config['discover_weekly_id'],
         config['discover_save_id'],
         config['concert_playlist_id'],
-        config['output_file_path']
+        log
     )
 
-    spotifybot.run()
+    artists = spotifybot.run()
+    print(artists)
