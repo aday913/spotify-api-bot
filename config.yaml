@@ -1,4 +1,4 @@
-config:
+spotify:
   client_id: <insert_id_here>
   client_secret: <insert_secret_here>
   redirect_url: <insert_url_here>
@@ -8,3 +8,7 @@ config:
 
   concert_playlist_id: <insert_id_here>
   output_file_path: <insert_path_here>
+
+seatgeek:
+  client_id: <insert_id_here>
+  client_secret: <insert_secret_here>
