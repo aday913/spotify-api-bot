@@ -7,8 +7,11 @@ spotify:
   discover_save_id: <insert_id_here>
 
   concert_playlist_id: <insert_id_here>
-  output_file_path: <insert_path_here>
 
 seatgeek:
   client_id: <insert_id_here>
   client_secret: <insert_secret_here>
+  
+  output_file_path: output_file_here
+  manual_artists:
+    - insert_here
