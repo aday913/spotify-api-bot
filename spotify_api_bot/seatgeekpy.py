@@ -48,7 +48,7 @@ class SeatgeekBot():
                 )
             self.log.info(f' {artist} events coming up: {self.data["artists"][artist]["meta"]["total"]}')
             if self.data['artists'][artist]["meta"]["total"] > 0:
-                utc_date = datetime.strptime(self.data['artists'][artist]['events'][0]['datetime_utc'], '%Y-%m-%dT%I:%M:%S')
+                utc_date = datetime.strptime(self.data['artists'][artist]['events'][0]['datetime_utc'], '%Y-%m-%dT%H:%M:%S')
                 az_date  = utc_date - timedelta(hours=7)
                 self.data['artists'][artist]['events'][0]['datetime_az'] = az_date.strftime('%Y-%m-%d')
             response_codes.append(code)
