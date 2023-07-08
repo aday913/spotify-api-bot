@@ -55,6 +55,7 @@ class SeatgeekBot():
                 response_codes.append(code)
             except Exception as error:
                 self.log.error(f'Got the following error when getting event for artist {artist_formatted}: {error}')
+                self.data['artists'].pop(artist)  # Remove the error-prone artist from the output data
         return response_codes
     
     def write_output(self):
