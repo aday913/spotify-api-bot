@@ -42,16 +42,19 @@ class SeatgeekBot():
         response_codes = []
         self.log.info('Looking for events from the interested artists')
         for artist in self.input_artists:
-            artist_formatted = artist.replace(' ', '-').lower()
-            code, self.data['artists'][artist] = self.send_request(
-                self.client_id, self.client_secret, artist_formatted
-                )
-            self.log.info(f' {artist} events coming up: {self.data["artists"][artist]["meta"]["total"]}')
-            if self.data['artists'][artist]["meta"]["total"] > 0:
-                utc_date = datetime.strptime(self.data['artists'][artist]['events'][0]['datetime_utc'], '%Y-%m-%dT%H:%M:%S')
-                az_date  = utc_date - timedelta(hours=7)
-                self.data['artists'][artist]['events'][0]['datetime_az'] = az_date.strftime('%Y-%m-%d')
-            response_codes.append(code)
+            try:
+                artist_formatted = artist.replace(' ', '-').lower()
+                code, self.data['artists'][artist] = self.send_request(
+                    self.client_id, self.client_secret, artist_formatted
+                    )
+                self.log.info(f' {artist} events coming up: {self.data["artists"][artist]["meta"]["total"]}')
+                if self.data['artists'][artist]["meta"]["total"] > 0:
+                    utc_date = datetime.strptime(self.data['artists'][artist]['events'][0]['datetime_utc'], '%Y-%m-%dT%H:%M:%S')
+                    az_date  = utc_date - timedelta(hours=7)
+                    self.data['artists'][artist]['events'][0]['datetime_az'] = az_date.strftime('%Y-%m-%d')
+                response_codes.append(code)
+            except Exception as error:
+                self.log.error(f'Got the following error when getting event for artist {artist_formatted}: {error}')
         return response_codes
     
     def write_output(self):
