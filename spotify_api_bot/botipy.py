@@ -96,7 +96,7 @@ class SpotifyBot():
         self.log.info(f'Total amount of artists found in playlist: {len(artist_list)}')
         return artist_list
     
-    def run(self):
+    def run(self) -> list:
         self.concert_artists = self.get_concert_artists()
         return self.concert_artists
 

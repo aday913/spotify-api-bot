@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import json
 import logging
+import os
 
 import requests
 from yaml import load, Loader
@@ -15,6 +16,15 @@ class SeatgeekBot():
             output_file : str,
             log
             ):
+        """_summary_
+
+        Args:
+            client_id (str): Seatgeek api client ID
+            client_secret (str): Seatgeek api client secret
+            input_artists (list): list of strings of input artists to search for events for
+            output_file (str): name/path of output json file
+            log: logging logger object
+        """
         
         self.client_id      = client_id
         self.client_secret  = client_secret
@@ -59,6 +69,14 @@ class SeatgeekBot():
         return response_codes
     
     def write_output(self):
+        # First delete the old events file 
+        self.log.debug(f'Deleting old json file {self.output_file}')
+        try:
+            os.remove(self.output_file)
+        except Exception:
+            self.log.debug(f'Could not find existing file {self.output_file}, so cannot delete')
+        
+        # Now write the events data to the output file
         self.log.info(f'Writing json data to {self.output_file}')
         with open(self.output_file, 'w') as outfile:
             json.dump(self.data, outfile, indent=4)
