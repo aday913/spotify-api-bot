@@ -1,5 +1,6 @@
 import json
 import logging
+import sys
 
 from yaml import load, Loader
 
@@ -61,8 +62,12 @@ if __name__ == '__main__':
 
     config = None
     log.info('Reading configuration file')
-    with open('config.yaml', 'r') as yml:
-        config = load(yml, Loader=Loader)
-    log.info('Successfully read config.yaml')
+    try:
+        with open('config.yaml', 'r') as yml:
+            config = load(yml, Loader=Loader)
+        log.info('Successfully read config.yaml')
+    except Exception as error:
+        log.error(f'Could not find configuration file of name "config.yaml"')
+        sys.exit()
     
     main(config, log)
