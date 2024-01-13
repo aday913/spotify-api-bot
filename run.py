@@ -52,7 +52,13 @@ def main(config, log):
     log.info('Below are a list of the artists that have events coming up:')
     for artist in data['artists']:
         if data['artists'][artist]['meta']['total'] > 0:
-            log.info(f'  {artist}: {data["artists"][artist]["events"][0]["datetime_az"]}')
+            event_date = data["artists"][artist]["events"][0]["datetime_az"]
+            event_city = data["artists"][artist]["events"][0]["venue"]["city"]
+            event_venue = data["artists"][artist]["events"][0]["venue"]["name"]
+            all_performers = [ i["name"] for i in data["artists"][artist]["events"][0]["performers"] ]
+            average_price = data["artists"][artist]["events"][0]["stats"]["average_price"]
+            lowest_price = data["artists"][artist]["events"][0]["stats"]["lowest_price"]
+            log.info(f'  {artist}: {event_date} in {event_city} at {event_venue} for as low as {lowest_price}, average price {average_price}. All performers: {all_performers}')
 
 if __name__ == '__main__':
 
