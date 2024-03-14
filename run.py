@@ -20,6 +20,7 @@ def main(config, log):
     seatgeek_ci         = config['seatgeek']['client_id']
     seatgeek_cs         = config['seatgeek']['client_secret']
     output_file         = config['seatgeek']['output_file_path']
+    state_id            = config['seatgeek']['state_id']
 
     if '.json' not in output_file:
         output_file = output_file + '.json'
@@ -42,6 +43,7 @@ def main(config, log):
         seatgeek_cs,
         interested_artists,
         output_file,
+        state,
         log
     )
     response_codes = seatgeekbot.run()
@@ -52,7 +54,7 @@ def main(config, log):
     log.info('Below are a list of the artists that have events coming up:')
     for artist in data['artists']:
         if data['artists'][artist]['meta']['total'] > 0:
-            event_date = data["artists"][artist]["events"][0]["datetime_az"]
+            event_date = data["artists"][artist]["events"][0]["datetime_utc"]
             event_city = data["artists"][artist]["events"][0]["venue"]["city"]
             event_venue = data["artists"][artist]["events"][0]["venue"]["name"]
             all_performers = [ i["name"] for i in data["artists"][artist]["events"][0]["performers"] ]

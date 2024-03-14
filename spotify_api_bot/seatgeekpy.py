@@ -14,6 +14,7 @@ class SeatgeekBot():
             client_secret : str,
             input_artists : list,
             output_file : str,
+            state : str,
             log
             ):
         """_summary_
@@ -36,6 +37,8 @@ class SeatgeekBot():
             self.output_file = self.output_file + '.json'
         log.info(f'Will save output json data to {self.output_file}')
 
+        self.state = state
+
         self.log = log
 
         self.data = {
@@ -44,7 +47,7 @@ class SeatgeekBot():
         }
 
     def send_request(self, client_id, client_secret, artist):
-        request_string = f'https://api.seatgeek.com/2/events?client_id={client_id}&client_secret={client_secret}&performers.slug={artist}&venue.state=AZ'
+        request_string = f'https://api.seatgeek.com/2/events?client_id={client_id}&client_secret={client_secret}&performers.slug={artist}&venue.state={state}'
         response = requests.get(request_string)
         return response, response.json()
     
