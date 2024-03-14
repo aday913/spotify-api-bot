@@ -131,8 +131,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-<<<<<<< HEAD
 test_data.json
-=======
 config.yaml
->>>>>>> 7a0cd68ff6d2f885335e07f14c3d7f8e900d06a0
