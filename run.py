@@ -12,8 +12,6 @@ def main(config, log):
     spotify_ci          = config['spotify']['client_id']
     spotify_cs          = config['spotify']['client_secret']
     spotify_redirect    = config['spotify']['redirect_url']
-    spotify_dw          = config['spotify']['discover_weekly_id']
-    spotify_dws         = config['spotify']['discover_save_id']
     spotify_concert     = config['spotify']['concert_playlist_id']
 
     log.info('Parsing seatgeek configuration variables')
@@ -30,8 +28,6 @@ def main(config, log):
         spotify_ci,
         spotify_cs,
         spotify_redirect,
-        spotify_dw,
-        spotify_dws,
         spotify_concert,
         log
     )
@@ -43,7 +39,7 @@ def main(config, log):
         seatgeek_cs,
         interested_artists,
         output_file,
-        state,
+        state_id,
         log
     )
     response_codes = seatgeekbot.run()

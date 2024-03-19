@@ -12,8 +12,6 @@ class SpotifyBot():
             client_id : str, 
             client_secret : str, 
             redirect : str, 
-            discover_playlist_id : str,
-            save_playlist_id : str,
             concert_check_id : str,
             log
     ):
@@ -23,8 +21,6 @@ class SpotifyBot():
             client_id (str): spotify api client id
             client_secret (str): spotify api client secret
             redirect (str): spotify api redirect uri
-            discover_playlist_id (str): discover weekly playlist id
-            save_playlist_id (str): discover weekly saved playlist id
             concert_check_id (str): concert artists playlist id
             output_file_path (str): output artists file path
         """
@@ -32,10 +28,6 @@ class SpotifyBot():
         self.client_id      = client_id
         self.client_secret  = client_secret
         self.redirect       = redirect
-
-        # Discovery weekly automation variables
-        self.discover_playlist_id   = discover_playlist_id
-        self.discover_save_id       = save_playlist_id
 
         # Artist check automation variables
         self.concert_id = concert_check_id
@@ -112,8 +104,6 @@ if __name__ == '__main__':
         config['client_id'],
         config['client_secret'],
         config['redirect_url'],
-        config['discover_weekly_id'],
-        config['discover_save_id'],
         config['concert_playlist_id'],
         log
     )

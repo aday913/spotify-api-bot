@@ -47,7 +47,7 @@ class SeatgeekBot():
         }
 
     def send_request(self, client_id, client_secret, artist):
-        request_string = f'https://api.seatgeek.com/2/events?client_id={client_id}&client_secret={client_secret}&performers.slug={artist}&venue.state={state}'
+        request_string = f'https://api.seatgeek.com/2/events?client_id={client_id}&client_secret={client_secret}&performers.slug={artist}&venue.state={self.state}'
         response = requests.get(request_string)
         return response, response.json()
     
@@ -103,6 +103,7 @@ if __name__ == '__main__':
         config['client_secret'],
         config['manual_artists'],
         config['output_file_path'],
+        config['state'],
         log
     )
     seatgeekbot.run()
