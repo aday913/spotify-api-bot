@@ -7,8 +7,9 @@ from yaml import load, Loader
 from spotify_api_bot.botipy import SpotifyBot
 from spotify_api_bot.seatgeekpy import SeatgeekBot
 
-
+# Main function to orchestrate the bot operations
 def main(config, log):
+    # Extract and log Spotify configuration variables
     log.info("Parsing spotify configuration variables")
     spotify_ci = config["spotify"]["client_id"]
     spotify_cs = config["spotify"]["client_secret"]
@@ -34,11 +35,13 @@ def main(config, log):
     seatgeekbot = SeatgeekBot(
         seatgeek_ci, seatgeek_cs, interested_artists, output_file, state_id, log
     )
-    response_codes = seatgeekbot.run()
+    response_codes = seatgeekbot.run()  # Run the Seatgeek bot and collect response codes
 
+    # Read the output file to load event data
     with open(output_file, "r") as f:
         data = json.load(f)
 
+    # Log and display a list of artists with upcoming events
     log.info("Below are a list of the artists that have events coming up:")
     for artist in data["artists"]:
         if data["artists"][artist]["meta"]["total"] > 0:
