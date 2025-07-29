@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import json
 import logging
 import os
+import time
 
 import requests
 from yaml import load, Loader
@@ -58,9 +59,11 @@ class SeatgeekBot:
         for artist in self.input_artists:
             try:
                 artist_formatted = artist.replace(" ", "-").lower()
+                self.data["meta"] = {"lastsync": datetime.now().strftime("%Y%m%d")}
                 code, self.data["artists"][artist] = self.send_request(
                     self.client_id, self.client_secret, artist_formatted
                 )
+
                 self.log.info(
                     f' {artist} events coming up: {self.data["artists"][artist]["meta"]["total"]}'
                 )
@@ -81,6 +84,7 @@ class SeatgeekBot:
                 self.data["artists"].pop(
                     artist
                 )  # Remove the error-prone artist from the output data
+            time.sleep(3)  # Sleep for a second to avoid hitting API rate limits
         return response_codes
 
     def write_output(self):
