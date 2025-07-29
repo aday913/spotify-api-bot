@@ -1,26 +1,29 @@
 import json
 import logging
+import os
 import sys
 
-from yaml import load, Loader
+from dotenv import load_dotenv
 
 from spotify_api_bot.botipy import SpotifyBot
 from spotify_api_bot.seatgeekpy import SeatgeekBot
 
+log = logging.getLogger(__name__)
+
 # Main function to orchestrate the bot operations
-def main(config, log):
+def main(config):
     # Extract and log Spotify configuration variables
     log.info("Parsing spotify configuration variables")
-    spotify_ci = config["spotify"]["client_id"]
-    spotify_cs = config["spotify"]["client_secret"]
-    spotify_redirect = config["spotify"]["redirect_url"]
-    spotify_concert = config["spotify"]["concert_playlist_id"]
+    spotify_ci = config['SPOTIFY_CLIENT_ID']
+    spotify_cs = config['SPOTIFY_CLIENT_SECRET']
+    spotify_redirect = config['SPOTIFY_REDIRECT_URI']
+    spotify_concert = config['SPOTIFY_PLAYLIST_ID']
 
     log.info("Parsing seatgeek configuration variables")
-    seatgeek_ci = config["seatgeek"]["client_id"]
-    seatgeek_cs = config["seatgeek"]["client_secret"]
-    output_file = config["seatgeek"]["output_file_path"]
-    state_id = config["seatgeek"]["state_id"]
+    seatgeek_ci = config['SEATGEEK_CLIENT_ID']
+    seatgeek_cs = config['SEATGEEK_CLIENT_SECRET']
+    output_file = config['OUTPUT_FILE_DESTINATION']
+    state_id = config['STATE_CODE']
 
     if ".json" not in output_file:
         output_file = output_file + ".json"
@@ -50,13 +53,9 @@ def main(config, log):
             event_venue = data["artists"][artist]["events"][0]["venue"]["name"]
             all_performers = [
                 i["name"] for i in data["artists"][artist]["events"][0]["performers"]
-            ]
-            # average_price = data["artists"][artist]["events"][0]["stats"][
-            #     "average_price"
-            # ]
-            lowest_price = data["artists"][artist]["events"][0]["stats"]["lowest_price"]
+            ] 
             log.info(
-                f"  {artist}: {event_date} in {event_city} at {event_venue} for as low as {lowest_price}, . All performers: {all_performers}"
+                f"  {artist}: {event_date} in {event_city} at {event_venue}. All performers: {all_performers}"
             )
 
 
@@ -68,14 +67,33 @@ if __name__ == "__main__":
 
     log = logging.getLogger(__name__)
 
-    config = None
-    log.info("Reading configuration file")
-    try:
-        with open("config.yaml", "r") as yml:
-            config = load(yml, Loader=Loader)
-        log.info("Successfully read config.yaml")
-    except Exception as error:
-        log.error(f'Could not find configuration file of name "config.yaml"')
-        sys.exit()
+    config = {}
 
-    main(config, log)
+    if os.path.exists('.env'):
+        log.info("Loading environment variables from .env file")
+        load_dotenv()
+
+    required_vars = [
+        'SPOTIFY_CLIENT_ID',
+        'SPOTIFY_CLIENT_SECRET',
+        'SPOTIFY_REDIRECT_URI',
+        'SPOTIFY_PLAYLIST_ID',
+        'SEATGEEK_CLIENT_ID',
+        'SEATGEEK_CLIENT_SECRET',
+        'OUTPUT_FILE_DESTINATION',
+        'STATE_CODE'
+    ]
+    for var in required_vars:
+        logging.info(f"Checking environment variable: {var}")
+        logging.info(f"Environment variable {var} is set to: {os.environ.get(var)}")
+        if var not in os.environ:
+            log.error(f"Environment variable {var} is not set.")
+            sys.exit(1)
+        config[var] = os.environ[var]
+
+    if os.environ.get('OUTPUT_FILE_DESTINATION'):
+        config['OUTPUT_FILE_DESTINATION'] = os.environ['OUTPUT_FILE_DESTINATION']
+    else:
+        config['OUTPUT_FILE_DESTINATION'] = os.path.join(os.getcwd(), 'output.json')
+
+    main(config)
