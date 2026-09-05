@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import sqlite3
 import sys
 
 from dotenv import load_dotenv
@@ -11,7 +12,6 @@ from spotify_api_bot.seatgeekpy import SeatgeekBot
 log = logging.getLogger(__name__)
 
 
-# Main function to orchestrate the bot operations
 def main(config):
     # Extract and log Spotify configuration variables
     log.info("Parsing spotify configuration variables")
@@ -19,15 +19,18 @@ def main(config):
     spotify_cs = config["SPOTIFY_CLIENT_SECRET"]
     spotify_redirect = config["SPOTIFY_REDIRECT_URI"]
     spotify_concert = config["SPOTIFY_PLAYLIST_ID"]
+    artist_db = config["ARTIST_DB"]
 
     log.info("Parsing seatgeek configuration variables")
     seatgeek_ci = config["SEATGEEK_CLIENT_ID"]
     seatgeek_cs = config["SEATGEEK_CLIENT_SECRET"]
-    output_file = config["OUTPUT_FILE_DESTINATION"]
+    concert_db = config["CONCERT_DB"]
     state_id = config["STATE_CODE"]
 
-    if ".json" not in output_file:
-        output_file = output_file + ".json"
+    if ".db" not in artist_db:
+        artist_db = artist_db + ".db"
+    if ".db" not in concert_db:
+        concert_db = concert_db + ".db"
 
     log.info("Initializing instance of the spotify bot")
     spotifybot = SpotifyBot(
@@ -83,20 +86,16 @@ if __name__ == "__main__":
         "SPOTIFY_PLAYLIST_ID",
         "SEATGEEK_CLIENT_ID",
         "SEATGEEK_CLIENT_SECRET",
-        "OUTPUT_FILE_DESTINATION",
+        "ARTIST_DB",
+        "CONCERT_DB",
         "STATE_CODE",
     ]
     for var in required_vars:
         logging.info(f"Checking environment variable: {var}")
-        logging.info(f"Environment variable {var} is set to: {os.environ.get(var)}")
+        logging.debug(f"Environment variable {var} is set to: {os.environ.get(var)}")
         if var not in os.environ:
             log.error(f"Environment variable {var} is not set.")
             sys.exit(1)
         config[var] = os.environ[var]
-
-    if os.environ.get("OUTPUT_FILE_DESTINATION"):
-        config["OUTPUT_FILE_DESTINATION"] = os.environ["OUTPUT_FILE_DESTINATION"]
-    else:
-        config["OUTPUT_FILE_DESTINATION"] = os.path.join(os.getcwd(), "output.json")
 
     main(config)
