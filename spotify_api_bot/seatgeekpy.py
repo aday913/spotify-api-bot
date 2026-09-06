@@ -3,9 +3,11 @@ import json
 import logging
 import os
 import time
+import sqlite3
+import sys
 
+from dotenv import load_dotenv
 import requests
-from yaml import load, Loader
 
 
 class SeatgeekBot:
@@ -15,7 +17,7 @@ class SeatgeekBot:
         client_id: str,
         client_secret: str,
         input_artists: list,
-        output_file: str,
+        concert_db: str,
         state: str,
         log,
     ):
@@ -25,7 +27,7 @@ class SeatgeekBot:
             client_id (str): Seatgeek api client ID
             client_secret (str): Seatgeek api client secret
             input_artists (list): list of strings of input artists to search for events for
-            output_file (str): name/path of output json file
+            concert_db (str): name/path of sqlite database to store events
             log: logging logger object
         """
 
@@ -34,10 +36,28 @@ class SeatgeekBot:
 
         self.input_artists = input_artists
 
-        self.output_file = output_file
-        if ".json" not in self.output_file:
-            self.output_file = self.output_file + ".json"
+        self.output_file = concert_db
+        if ".db" not in self.output_file:
+            self.output_file = self.output_file + ".db"
         log.info(f"Will save output json data to {self.output_file}")
+        
+        log.info(f"Connecting to concert database {self.output_file}")
+        self.conn = sqlite3.connect(self.output_file)
+        self.cursor = self.conn.cursor()
+        self.cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS concerts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                artist TEXT,
+                event_date TEXT,
+                venue TEXT,
+                city TEXT,
+                state TEXT,
+                UNIQUE(artist, event_date, venue, city, state)
+            )
+            """
+        )
+        log.info(f"Successfully connected to concert database {self.output_file}")
 
         self.state = state
 
@@ -88,40 +108,78 @@ class SeatgeekBot:
         return response_codes
 
     def write_output(self):
-        # First delete the old events file
-        self.log.debug(f"Deleting old json file {self.output_file}")
-        try:
-            os.remove(self.output_file)
-        except Exception:
-            self.log.debug(
-                f"Could not find existing file {self.output_file}, so cannot delete"
-            )
-
-        # Now write the events data to the output file
-        self.log.info(f"Writing json data to {self.output_file}")
-        with open(self.output_file, "w") as outfile:
-            json.dump(self.data, outfile, indent=4)
+        self.log.info(f"Writing output to {self.output_file}")
+        for artist in self.data["artists"]:
+            if self.data["artists"][artist]["meta"]["total"] == 0:
+                continue
+            for event in self.data["artists"][artist]["events"]:
+                try:
+                    self.cursor.execute(
+                        "INSERT OR IGNORE INTO concerts (artist, event_date, venue, city, state) VALUES (?, ?, ?, ?, ?)",
+                        (
+                            artist,
+                            event["datetime_local"],
+                            event["venue"]["name"],
+                            event["venue"]["city"],
+                            event["venue"]["state"],
+                        ),
+                    )
+                except Exception as error:
+                    self.log.error(
+                        f"Got the following error when writing to database for artist {artist}: {error}"
+                    )
+        self.conn.commit()
 
     def run(self):
         codes = self.get_events()
         self.write_output()
+        self.conn.close()
         return codes
 
 
 if __name__ == "__main__":
 
     log = logging.getLogger(__name__)
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s-%(levelname)s: %(message)s"
+    )
 
-    config = None
-    with open("config.yaml", "r") as yml:
-        config = load(yml, Loader=Loader)["seatgeek"]
+    if os.path.exists(".env"):
+        log.info("Loading environment variables from .env file")
+        load_dotenv()
 
-    seatgeekbot = SeatgeekBot(
-        config["client_id"],
-        config["client_secret"],
-        config["manual_artists"],
-        config["output_file_path"],
-        config["state"],
+    config = {}
+    required_vars = [
+        "SEATGEEK_CLIENT_ID",
+        "SEATGEEK_CLIENT_SECRET",
+        "ARTIST_DB",
+        "CONCERT_DB",
+        "STATE_CODE",
+    ]
+    for var in required_vars:
+        logging.info(f"Checking environment variable: {var}")
+        logging.debug(f"Environment variable {var} is set to: {os.environ.get(var)}")
+        if var not in os.environ:
+            log.error(f"Environment variable {var} is not set.")
+            sys.exit(1)
+        config[var] = os.environ[var]
+
+    if not os.path.exists(config["ARTIST_DB"]):
+        log.error(f"Artist database {config['ARTIST_DB']} does not exist.")
+        sys.exit(1)
+
+    conn = sqlite3.connect(config["ARTIST_DB"])
+    cursor = conn.cursor()
+    cursor.execute("SELECT name FROM artists")
+    interested_artists = [row[0] for row in cursor.fetchall()]
+    conn.close()
+
+    spotifybot = SeatgeekBot(
+        config["SEATGEEK_CLIENT_ID"],
+        config["SEATGEEK_CLIENT_SECRET"],
+        interested_artists,
+        config["CONCERT_DB"],
+        config["STATE_CODE"],
         log,
     )
-    seatgeekbot.run()
+    spotifybot.run()
