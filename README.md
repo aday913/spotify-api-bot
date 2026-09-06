@@ -5,7 +5,7 @@
 [![SQLite](https://img.shields.io/badge/sqlite-3-003B57.svg?style=flat&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A containerized, headless Python automation application that extracts all artists from a designated Spotify playlist, persists them into a SQLite database, queries the SeatGeek API for upcoming concerts in your state, and stores matching events into a dedicated SQLite events database.
+A headless Python application (either local or via containerization) that extracts all artists from a designated Spotify playlist, persists them into a SQLite database, queries the SeatGeek API for upcoming concerts in a given state, and stores matching events into a dedicated SQLite events database.
 
 ---
 
@@ -113,9 +113,9 @@ Stores all concerts found for your tracked artists within the target state.
 3. Fill in your App name and description.
 4. Set the **Redirect URI** to:
    ```text
-   http://127.0.0.1:8383/redirect
+   http://127.0.0.1:5000/redirect
    ```
-   *(Or any local port such as `http://localhost:8888/callback`, ensuring it matches `SPOTIFY_REDIRECT_URI` in your `.env` file).*
+   *(Or any local port such as `http://127.0.0.1:8888/callback`, ensuring it matches `SPOTIFY_REDIRECT_URI` in your `.env` file).*
 5. From the application settings, note your **Client ID** and **Client Secret**.
 
 ### 2. Spotify Playlist ID
@@ -146,7 +146,7 @@ Edit `.env` with your credentials:
 # Spotify Configuration
 SPOTIFY_CLIENT_ID=your_spotify_client_id_here
 SPOTIFY_CLIENT_SECRET=your_spotify_client_secret_here
-SPOTIFY_REDIRECT_URI=http://127.0.0.1:8383/redirect
+SPOTIFY_REDIRECT_URI=http://127.0.0.1:5000/redirect
 SPOTIFY_PLAYLIST_ID=your_spotify_playlist_id_here
 
 # SeatGeek Configuration
